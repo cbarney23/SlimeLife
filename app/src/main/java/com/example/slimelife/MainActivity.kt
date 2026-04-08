@@ -60,11 +60,11 @@ fun TopHUD() {
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF313244))
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(all=16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = "Slime Life",
@@ -73,17 +73,19 @@ fun TopHUD() {
                 fontWeight = FontWeight.Bold
             )
 
-            Row {
-                Text(                               // Tracker for pet happiness. (NOT IMPLEMENTED)
-                    text = "Pet Happiness: 100",
-                    color = Color.Yellow,
-                    fontSize = 16.sp
-                )
-                Spacer(modifier = Modifier.width(width=12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 Text(
-                    text = "Pet Hunger: 80",       // Tracker for pet hunger. (NOT IMPLEMENTED)
+                    text = "Happiness: 100",
+                    color = Color.Yellow,
+                    fontSize = 13.sp
+                )
+                Text(
+                    text = "Hunger: 80",
                     color = Color.Cyan,
-                    fontSize = 16.sp
+                    fontSize = 13.sp
                 )
             }
         }
