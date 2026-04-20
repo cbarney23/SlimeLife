@@ -19,6 +19,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import java.time.Instant
 
 class MainActivity : ComponentActivity() {
@@ -38,6 +41,7 @@ class MainActivity : ComponentActivity() {
 fun GameScreen(prefs : GamePrefs) {
     var hunger by remember { mutableStateOf(prefs.getHunger()) }
     var happiness by remember { mutableStateOf(prefs.getHappiness()) }
+    var isFedHappy by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -55,10 +59,18 @@ fun GameScreen(prefs : GamePrefs) {
             happiness = (prefs.getHappiness() - happinessLoss).coerceAtLeast(0)
         }
     }
+
+    LaunchedEffect(isFedHappy) {
+        if (isFedHappy) {
+            kotlinx.coroutines.delay(2000)
+            isFedHappy = false
+        }
+    }
+
     Column(             // Stacks UI vertically
         modifier = Modifier
             .fillMaxSize()                          // Fit whole screen
-            .background(Color(color = 0xFF1E1E2E))    // Sets background color (dark)
+            .background(Color(color = 0xFFF5E6D3))    // Sets background color (tan)
             .padding(all = 16.dp)                     // Adds space around edges
     ) {
         TopHUD(hunger, happiness)            // Top bar of UI
@@ -66,6 +78,7 @@ fun GameScreen(prefs : GamePrefs) {
         Spacer(modifier = Modifier.height(height = 16.dp))
 
         MainGameArea(      // Main Game Screen
+            isFedHappy = isFedHappy,
             modifier = Modifier
                 .weight(weight = 1f)
                 .fillMaxWidth()
@@ -73,7 +86,7 @@ fun GameScreen(prefs : GamePrefs) {
 
         Spacer(modifier = Modifier.height(height = 16.dp))
 
-        ActionButtons(prefs, hunger, happiness)     // Interaction Buttons
+        ActionButtons(prefs, hunger, happiness, onFeed = { isFedHappy = true })     // Interaction Buttons
 
         Spacer(modifier = Modifier.height(height = 16.dp))
 
@@ -86,7 +99,7 @@ fun GameScreen(prefs : GamePrefs) {
 fun TopHUD(hunger : Long, happiness : Long) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF313244))
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8D5B7))
     ) {
         Column(
             modifier = Modifier
@@ -96,7 +109,7 @@ fun TopHUD(hunger : Long, happiness : Long) {
         ) {
             Text(
                 text = "Slime Life",
-                color = Color.White,
+                color = Color(0xFF3B2F2F),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -121,27 +134,61 @@ fun TopHUD(hunger : Long, happiness : Long) {
 }
 
 @Composable
-fun MainGameArea(modifier: Modifier = Modifier) {
+fun MainGameArea(
+    isFedHappy: Boolean,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = Color(color=0xFF45475A)),
-        shape = RoundedCornerShape(size=20.dp)
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8D5B7)),
+        shape = RoundedCornerShape(20.dp)
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Character / Game Scene Here",           // MAIN GAME SCREEN
-                color = Color.White,
-                fontSize = 20.sp
-            )
+            Box(
+                modifier = Modifier.size(260.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // Base slime
+                Image(
+                    painter = painterResource(id = R.drawable.blue),
+                    contentDescription = "Slime body",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+
+                // Eyes
+                Image(
+                    painter = painterResource(
+                        id = if (isFedHappy) R.drawable.happy else R.drawable.eyes
+                    ),
+                    contentDescription = "Slime eyes",
+                    modifier = Modifier
+                        .fillMaxWidth(0.42f)
+                        .offset(y = 20.dp),
+                    contentScale = ContentScale.Fit
+                )
+
+                // Blush when happy
+                if (isFedHappy) {
+                    Image(
+                        painter = painterResource(id = R.drawable.blush),
+                        contentDescription = "Slime blush",
+                        modifier = Modifier
+                            .fillMaxWidth(0.62f)
+                            .offset(y = 36.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun ActionButtons(prefs : GamePrefs, hunger : Long, happiness: Long) {
+fun ActionButtons(prefs : GamePrefs, hunger : Long, happiness: Long, onFeed: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -149,6 +196,7 @@ fun ActionButtons(prefs : GamePrefs, hunger : Long, happiness: Long) {
         Button(onClick = {
             prefs.setHunger(100)
             prefs.setLastFeed(Instant.now())
+            onFeed()
         }) {
             Text(text="Feed")                   // Feed pet. NOT IMPLEMENTED
         }
@@ -170,7 +218,7 @@ fun ActionButtons(prefs : GamePrefs, hunger : Long, happiness: Long) {
 fun BottomMenu() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF313244))
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8D5B7))
     ) {
         Row(
             modifier = Modifier
